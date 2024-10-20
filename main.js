@@ -93,6 +93,7 @@ let facingMode = 'user';
 let constraints = {
   audio: false,
   video: {
+
     facingMode
   }
 };
