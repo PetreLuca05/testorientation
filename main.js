@@ -87,7 +87,7 @@ function onWindowResize() {
   renderer.setSize( window.innerWidth, window.innerHeight );
 }
 
-const webCamElem = document.getElementById("cam");
+const videoElement = document.getElementById('cam');
 
 let facingMode = 'user';
 let constraints = {
@@ -98,8 +98,16 @@ let constraints = {
   }
 };
 
-navigator.mediaDevices.getUserMedia(constraints).then(stream => { 
-  webCamElem.srcObject = stream;
-}).catch(error => {
+// Fix for iOS Safari from https://leemartin.dev/hello-webrtc-on-safari-11-e8bcb5335295
+videoElement.setAttribute('autoplay', '');
+videoElement.setAttribute('muted', '');
+videoElement.setAttribute('playsinline', '')
+
+navigator.mediaDevices.getUserMedia(constraints)
+.then(function(stream) {
+
+  videoElement.srcObject = stream;
+})
+.catch(error => {
   alert(error);
 })

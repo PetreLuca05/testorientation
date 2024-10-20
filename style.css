@@ -18,8 +18,9 @@ body{
 video{
   width: 100%;
   min-height: auto;
-  position: fixed;
-  z-index: 99999;
+
+  background-color: rebeccapurple;
+  padding: 25px;
 }
 
 button{
