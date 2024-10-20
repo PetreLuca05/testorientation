@@ -97,6 +97,8 @@ let constraints = {
   }
 };
 
-navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
+navigator.mediaDevices.getUserMedia({video: true}).then(stream => { 
   webCamElem.srcObject = stream;
+}).catch(error => {
+  alert('error');
 })
