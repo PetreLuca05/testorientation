@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { DeviceOrientationControls } from './DeviceOrientationControls'
+import image from './textures/bg.jpg'
 
 let camera, scene, renderer, controls;
 
@@ -11,10 +12,26 @@ startButton.addEventListener( 'click', function () {
 
 }, false );
 
-function init() {
+const _VS = `
+varying vec2 vertexUV;
 
-  const overlay = document.getElementById( 'overlay' );
-  overlay.remove();
+void main(){
+  vertexUV = uv;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}`;
+const _FS = `
+uniform sampler2D image;
+
+varying vec2 vertexUV;
+
+void main(){
+  vec3 color = texture2D(image, vertexUV).rgb;
+  gl_FragColor = vec4(color, 1.0);
+}`;
+
+function init() {
+  const canvas = document.getElementById( 'canvas' );
+  canvas.remove();
 
   camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1100 );
 
@@ -27,43 +44,59 @@ function init() {
   geometry.scale( - 1, 1, 1 );
 
   const material = new THREE.MeshBasicMaterial( {
-    map: new THREE.TextureLoader().load( './textures/2294472375_24a3b8ef46_o.JPG' )
+    map: new THREE.TextureLoader().load(image)
+  } );
+
+  const material2 = new THREE.ShaderMaterial( {
+    uniforms: {
+      texture: new THREE.TextureLoader().load(image)
+    },
+    vertexShader: _VS,
+    fragmentShader: _FS,
   } );
 
   const mesh = new THREE.Mesh( geometry, material );
   scene.add( mesh );
 
-  const helperGeometry = new THREE.BoxGeometry( 100, 100, 100, 4, 4, 4 );
+  const helperGeometry = new THREE.BoxGeometry( 100, 100, 100, 4, 4, 4);
   const helperMaterial = new THREE.MeshBasicMaterial( { color: 0xff00ff, wireframe: true } );
   const helper = new THREE.Mesh( helperGeometry, helperMaterial );
   scene.add( helper );
 
   //
-
   renderer = new THREE.WebGLRenderer( { antialias: true } );
   renderer.setPixelRatio( window.devicePixelRatio );
   renderer.setSize( window.innerWidth, window.innerHeight );
   document.body.appendChild( renderer.domElement );
 
   //
-
   window.addEventListener( 'resize', onWindowResize, false );
 }
 
 function animate() {
-
   window.requestAnimationFrame( animate );
 
   controls.update();
   renderer.render( scene, camera );
-
 }
 
 function onWindowResize() {
-
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
 
   renderer.setSize( window.innerWidth, window.innerHeight );
-
 }
+
+const webCamElem = document.getElementById("cam");
+
+let facingMode = 'user';
+let constraints = {
+  audio: false,
+  video: {
+    facingMode
+  }
+};
+
+navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
+  webCamElem.srcObject = stream;
+})
