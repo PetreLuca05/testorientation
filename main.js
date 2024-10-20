@@ -27,7 +27,7 @@ function init() {
   geometry.scale( - 1, 1, 1 );
 
   const material = new THREE.MeshBasicMaterial( {
-    map: new THREE.TextureLoader().load( 'textures/2294472375_24a3b8ef46_o.jpg' )
+    map: new THREE.TextureLoader().load( './textures/2294472375_24a3b8ef46_o.JPG' )
   } );
 
   const mesh = new THREE.Mesh( geometry, material );
