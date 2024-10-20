@@ -8,22 +8,6 @@ const startButton = document.getElementById('explore');
 startButton.addEventListener( 'click', function () {init(true);}, false);
 
 clock = new THREE.Clock();
-//RENDERER SETUP
-function init(useHelper) {
-  clock.start();
-
-  renderer = new THREE.WebGLRenderer( { antialias: true } );
-  renderer.setPixelRatio( window.devicePixelRatio );
-  renderer.setSize( window.innerWidth, window.innerHeight );
-  document.body.appendChild(renderer.domElement);
-
-  animate();
-
-  scene.add(environment);
-
-  if(useHelper)
-    scene.add( helper );
-}
 
 //CAMERA SETUP
 camera = new THREE.PerspectiveCamera( 85, window.innerWidth / window.innerHeight, 1, 1100 );
@@ -84,6 +68,23 @@ const helper = new THREE.Mesh( helperGeometry, helperMaterial );
 
 const canvas = document.getElementById('canvas');
 canvas.remove();
+
+//RENDERER SETUP
+function init(useHelper) {
+  clock.start();
+
+  renderer = new THREE.WebGLRenderer( { antialias: true } );
+  renderer.setPixelRatio( window.devicePixelRatio );
+  renderer.setSize( window.innerWidth, window.innerHeight );
+  document.body.appendChild(renderer.domElement);
+
+  animate();
+
+  scene.add(environment);
+
+  if(useHelper)
+    scene.add( helper );
+}
 
 function animate() {
   window.requestAnimationFrame(animate);
