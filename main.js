@@ -1,40 +1,56 @@
 import * as THREE from 'three'
 import { DeviceOrientationControls } from './DeviceOrientationControls'
 import image from './textures/bg.jpg'
+import { Clock } from 'three';
 
 let camera, scene, renderer, controls;
 
 const startButton = document.getElementById( 'startButton' );
 startButton.addEventListener( 'click', function () {
-
   init();
   animate();
 
 }, false );
 
 const _VS = `
-varying vec2 vertexUV;
+varying vec2 vUv;
+uniform float time;
 
-void main(){
-  vertexUV = uv;
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-}`;
+void main() {
+  vUv = uv;
+
+  vec4 res;
+  res = vec4(position.x, position.y, position.z, 1.0);
+  gl_Position = projectionMatrix * modelViewMatrix * res;
+}
+`;
+
 const _FS = `
-uniform sampler2D image;
+uniform sampler2D texture1;
+uniform float time;
 
-varying vec2 vertexUV;
+varying vec2 vUv;
 
-void main(){
-  vec3 color = texture2D(image, vertexUV).rgb;
-  gl_FragColor = vec4(color, 1.0);
-}`;
+void main() {
+  vec4 colorA = vec4(0.0, 0.0, 0.0, 0.0);
+  vec4 col = texture2D(texture1, vUv);
+  vec4 res = mix(colorA, col, time);
+
+  gl_FragColor = vec4(res);
+}
+`;
+
+const clock = new THREE.Clock();
+const uniformsss = {
+  texture1: { type: "t", value: new THREE.TextureLoader().load(image) },
+  time: { type: "f", value: clock.getElapsedTime()},
+};
 
 function init() {
   const canvas = document.getElementById( 'canvas' );
   canvas.remove();
 
   camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1100 );
-
   controls = new DeviceOrientationControls( camera );
 
   scene = new THREE.Scene();
@@ -43,20 +59,18 @@ function init() {
   // invert the geometry on the x-axis so that all of the faces point inward
   geometry.scale( - 1, 1, 1 );
 
-  const material = new THREE.MeshBasicMaterial( {
+  const materialOLD = new THREE.MeshBasicMaterial( {
     map: new THREE.TextureLoader().load(image)
   } );
 
-  const material2 = new THREE.ShaderMaterial( {
-    uniforms: {
-      texture: new THREE.TextureLoader().load(image)
-    },
+  const material = new THREE.ShaderMaterial( {
+    uniforms: uniformsss,
     vertexShader: _VS,
     fragmentShader: _FS,
   } );
 
   const mesh = new THREE.Mesh( geometry, material );
-  scene.add( mesh );
+  scene.add(mesh);
 
   const helperGeometry = new THREE.BoxGeometry( 100, 100, 100, 4, 4, 4);
   const helperMaterial = new THREE.MeshBasicMaterial( { color: 0xff00ff, wireframe: true } );
@@ -69,8 +83,14 @@ function init() {
   renderer.setSize( window.innerWidth, window.innerHeight );
   document.body.appendChild( renderer.domElement );
 
-  //
-  window.addEventListener( 'resize', onWindowResize, false );
+  function myGeeks() {
+    clock.start();
+  }
+
+  clock.start();
+
+  //setTimeout(myGeeks, 1000);
+
 }
 
 function animate() {
@@ -78,22 +98,24 @@ function animate() {
 
   controls.update();
   renderer.render( scene, camera );
-}
 
-function onWindowResize() {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
 
-  renderer.setSize( window.innerWidth, window.innerHeight );
+  if(uniformsss.time.value < 1)
+    uniformsss.time.value = clock.getElapsedTime();
+  else uniformsss.time.value = 1;
+
+
+  //uniformsss.time.value = clock.getElapsedTime();
+
+  //console.log(uniformsss.time.value);
 }
 
 const videoElement = document.getElementById('cam');
 
-let facingMode = 'user';
+let facingMode = 'environment';
 let constraints = {
   audio: false,
   video: {
-
     facingMode
   }
 };
@@ -105,7 +127,6 @@ videoElement.setAttribute('playsinline', '')
 
 navigator.mediaDevices.getUserMedia(constraints)
 .then(function(stream) {
-
   videoElement.srcObject = stream;
 })
 .catch(error => {

@@ -15,14 +15,25 @@ body{
   flex-direction: column;
 }
 
-video{
-  width: 100%;
-  min-height: auto;
+#wraper {
+  overflow: hidden;
+  display: flex;
+  align-items: center; 
+  justify-content: center;
+}
 
-  background-color: rebeccapurple;
-  padding: 25px;
+video{
 }
 
 button{
+  width: 100%;
+  
+  position: fixed;
+  bottom: 0;
+  padding: 25px;
+}
 
+canvas{
+  position: fixed;
+  z-index: 999999;
 }
